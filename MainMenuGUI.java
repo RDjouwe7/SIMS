@@ -6,8 +6,8 @@ import java.awt.event.ActionListener;
 public class MainMenuGUI extends JFrame {
 
     public MainMenuGUI() {
-        setTitle("Inventory System - Main Menu");
-        setSize(400, 300);
+        setTitle("SIMS - Main Menu");
+        setSize(1500, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
