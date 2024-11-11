@@ -1,5 +1,5 @@
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.*; //This package is for GUI
+import java.awt.*; // This package is to develop GUI components such as Textfields etc.
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -12,15 +12,13 @@ public class Login extends JFrame {
 
     private JTextField usernameField; // for the usernname
     private JPasswordField passwordField; // for the password
-    private JButton loginButton;
-    private int loginAttempts = 0;
+    private JButton loginButton;// for the user button
+    private int loginAttempts = 0; // for the login attempts
     
 
     public Login() {
-        setResizable(false);
+        setResizable(false); // user can't resize the window
         setLayout(new BorderLayout()); // Set layout for frame
-
-      
 
         // Set frame properties
         ImageIcon icon = new ImageIcon("sims.png"); // our logo (the icon)
@@ -87,8 +85,6 @@ public class Login extends JFrame {
             }
         });
     }
-
-
     private void handleLogin() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
@@ -108,7 +104,6 @@ public class Login extends JFrame {
         }
         
     }
-
     public static void main(String[] args) {
         //  By queuing tasks in invokeLater, we ensure the GUI creation and updates are handled in a thread-safe way on the EDT
         // Read about Lambda Expressions in w3 schools 
@@ -118,4 +113,3 @@ public class Login extends JFrame {
         });
     }
 }
-
