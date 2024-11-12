@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Item implements Serializable {
@@ -44,5 +45,14 @@ public class Item implements Serializable {
 
     public Date getExpirationDate() {
         return expirationDate;
+    }
+     @Override
+    public String toString() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        return "Name: " + name +
+               ", Category: " + category +
+               ", Price: $" + price +
+               ", Amount: " + amount +
+               ", Expiration Date: " + dateFormat.format(expirationDate);
     }
 }

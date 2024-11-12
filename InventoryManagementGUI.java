@@ -1,115 +1,75 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class InventoryManagementGUI extends JFrame {
-    private ArrayList<Item> items;
-    private DefaultListModel<String> listModel;
+    private StockManagementGUI stockManagementGUI; // Reference to StockManagementGUI
 
-    public InventoryManagementGUI(ArrayList<Item> sharedItems) {
-        this.items = sharedItems;
-
+    public InventoryManagementGUI(ArrayList<Item> items) {
         setTitle("Inventory Management");
-        setSize(600, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(6, 2, 10, 10));
+        // Initialize StockManagementGUI with the shared items list
+        stockManagementGUI = new StockManagementGUI(items);
 
-        // Item Name
-        JLabel nameLabel = new JLabel("Item Name:");
-        panel.add(nameLabel);
+        // Add a button to add items
+        JButton addItemButton = new JButton("Add New Item");
+        addItemButton.addActionListener(e -> openAddItemDialog());
+        add(addItemButton, BorderLayout.CENTER);
 
-        JTextField nameField = new JTextField();
-        panel.add(nameField);
+        setVisible(true);
+    }
 
-        // Category
-        JLabel categoryLabel = new JLabel("Category:");
-        panel.add(categoryLabel);
-
+    private void openAddItemDialog() {
+        // Dialog for adding a new item
         JTextField categoryField = new JTextField();
-        panel.add(categoryField);
-
-        // Price
-        JLabel priceLabel = new JLabel("Price:");
-        panel.add(priceLabel);
-
+        JTextField nameField = new JTextField();
         JTextField priceField = new JTextField();
-        panel.add(priceField);
-
-        // Amount
-        JLabel amountLabel = new JLabel("Amount:");
-        panel.add(amountLabel);
-
         JTextField amountField = new JTextField();
+        JTextField expirationDateField = new JTextField(); // Optional: MM/DD/YYYY format
+
+        JPanel panel = new JPanel(new GridLayout(5, 2));
+        panel.add(new JLabel("Category:"));
+        panel.add(categoryField);
+        panel.add(new JLabel("Name:"));
+        panel.add(nameField);
+        panel.add(new JLabel("Price:"));
+        panel.add(priceField);
+        panel.add(new JLabel("Amount:"));
         panel.add(amountField);
-
-        // Expiration Date
-        JLabel expirationDateLabel = new JLabel("Expiration Date (MM/DD/YYYY):");
-        panel.add(expirationDateLabel);
-
-        JTextField expirationDateField = new JTextField();
+        panel.add(new JLabel("Expiration Date (MM/DD/YYYY):"));
         panel.add(expirationDateField);
 
-        // Add Item Button
-        JButton addButton = new JButton("Add Item");
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String name = nameField.getText();
+        int result = JOptionPane.showConfirmDialog(this, panel, "Add New Item", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
                 String category = categoryField.getText();
+                String name = nameField.getText();
                 double price = Double.parseDouble(priceField.getText());
                 int amount = Integer.parseInt(amountField.getText());
-                @SuppressWarnings("deprecation")
-                Date expirationDate = new Date(expirationDateField.getText());  // Simplified for example
 
-                Item newItem = new Item(name, category, price, amount, expirationDate);
-                items.add(newItem);
-                updateItemList();
-                saveData();
+                Date expirationDate = null;
+                if (!expirationDateField.getText().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+                    expirationDate = sdf.parse(expirationDateField.getText());
+                }
+
+                // Create the new item
+                Item newItem = new Item(category, name, price, amount, expirationDate);
+
+                // Add the item to StockManagementGUI
+                stockManagementGUI.addItem(newItem);
+
+                JOptionPane.showMessageDialog(this, "Item added successfully!");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Invalid input. Please check your data and try again.");
             }
-        });
-        panel.add(addButton);
-
-        // Inventory List
-        listModel = new DefaultListModel<>();
-        JList<String> itemList = new JList<>(listModel);
-        panel.add(new JScrollPane(itemList));
-
-        // Back to Main Menu button
-        JButton backButton = new JButton("Back to Main Menu");
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                new MainMenuGUI();
-            }
-        });
-        panel.add(backButton);
-
-        add(panel);
-        setVisible(true);
-
-        // Load and display existing items
-        updateItemList();
-    }
-
-    private void updateItemList() {
-        listModel.clear();
-        for (Item item : items) {
-            listModel.addElement(item.getName());
         }
-    }
-
-    private void saveData() {
-        // Save items to a file
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new InventoryManagementGUI(new ArrayList<>()));
     }
 }

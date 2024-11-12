@@ -9,73 +9,109 @@ public class StockManagementGUI extends JFrame {
     private ArrayList<Item> items;
     private DefaultTableModel tableModel;
     private JTable table;
+    private JTextField searchField;
 
     public StockManagementGUI(ArrayList<Item> sharedItems) {
         this.items = sharedItems;
 
         setTitle("Stock Management");
-        setSize(600, 600);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(10, 2, 10, 10));
+        // Use a BorderLayout for better component placement
+        setLayout(new BorderLayout(10, 10));
 
-        // Price
+        // Panel for managing item updates and search
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new GridBagLayout());
+        controlPanel.setBorder(BorderFactory.createTitledBorder("Item Management"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5); // Add space between components
+
+        // Search Section
+        JLabel searchLabel = new JLabel("Search Item:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        controlPanel.add(searchLabel, gbc);
+
+        searchField = new JTextField(15);
+        gbc.gridx = 1;
+        controlPanel.add(searchField, gbc);
+
+        JButton searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> searchItem());
+        gbc.gridx = 2;
+        controlPanel.add(searchButton, gbc);
+
+        // Price Section
         JLabel priceLabel = new JLabel("New Price:");
-        panel.add(priceLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        controlPanel.add(priceLabel, gbc);
 
-        JTextField priceField = new JTextField();
-        panel.add(priceField);
+        JTextField priceField = new JTextField(15);
+        gbc.gridx = 1;
+        controlPanel.add(priceField, gbc);
 
-        // Amount
+        // Amount Section
         JLabel amountLabel = new JLabel("New Amount:");
-        panel.add(amountLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        controlPanel.add(amountLabel, gbc);
 
-        JTextField amountField = new JTextField();
-        panel.add(amountField);
+        JTextField amountField = new JTextField(15);
+        gbc.gridx = 1;
+        controlPanel.add(amountField, gbc);
 
-        // Expiration Date
-        JLabel expirationDateLabel = new JLabel("New Expiration Date (MM/DD/YYYY):");
-        panel.add(expirationDateLabel);
+        // Expiration Date Section
+        JLabel expirationDateLabel = new JLabel("Expiration Date (MM/DD/YYYY):");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        controlPanel.add(expirationDateLabel, gbc);
 
-        JTextField expirationDateField = new JTextField();
-        panel.add(expirationDateField);
+        JTextField expirationDateField = new JTextField(15);
+        gbc.gridx = 1;
+        controlPanel.add(expirationDateField, gbc);
 
         // Update Item button
         JButton updateButton = new JButton("Update Item");
         updateButton.addActionListener(e -> updateItem(priceField, amountField, expirationDateField));
-        panel.add(updateButton);
+        gbc.gridx = 2;
+        controlPanel.add(updateButton, gbc);
+
+        // Add control panel to the frame
+        add(controlPanel, BorderLayout.NORTH);
 
         // Table for displaying the inventory
         String[] columnNames = {"Category", "Item Name", "Price", "Amount", "Expiration Date"};
         tableModel = new DefaultTableModel(columnNames, 0);
         table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane);
+        add(scrollPane, BorderLayout.CENTER);
 
-        // Delete Item button
+        // Button Panel for Delete and Back options
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
         JButton deleteButton = new JButton("Delete Item");
         deleteButton.addActionListener(e -> deleteItem());
-        panel.add(deleteButton);
+        buttonPanel.add(deleteButton);
 
-        // Back to Main Menu button
         JButton backButton = new JButton("Back to Main Menu");
         backButton.addActionListener(e -> backToMainMenu());
-        panel.add(backButton);
+        buttonPanel.add(backButton);
+
+        add(buttonPanel, BorderLayout.SOUTH);
 
         // Populate the table with the inventory data
         populateTable();
 
-        add(panel);
         setVisible(true);
     }
 
     private void populateTable() {
-        // Clear existing rows
         tableModel.setRowCount(0);
-
-        // Populate the table with the inventory data
         for (Item item : items) {
             Object[] rowData = {
                 item.getCategory(),
@@ -102,7 +138,6 @@ public class StockManagementGUI extends JFrame {
             String itemName = (String) table.getValueAt(selectedRow, 1);
             Item itemToUpdate = null;
 
-            // Find the selected item
             for (Item item : items) {
                 if (item.getName().equals(itemName)) {
                     itemToUpdate = item;
@@ -111,42 +146,22 @@ public class StockManagementGUI extends JFrame {
             }
 
             if (itemToUpdate != null) {
-                String priceText = priceField.getText();
-                String amountText = amountField.getText();
-                String expirationDateText = expirationDateField.getText();
-
-                if (!priceText.isEmpty()) {
-                    try {
-                        double newPrice = Double.parseDouble(priceText);
-                        itemToUpdate.setPrice(newPrice);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(this, "Invalid price input.");
-                        return;
+                try {
+                    if (!priceField.getText().isEmpty()) {
+                        itemToUpdate.setPrice(Double.parseDouble(priceField.getText()));
                     }
-                }
-
-                if (!amountText.isEmpty()) {
-                    try {
-                        int newAmount = Integer.parseInt(amountText);
-                        itemToUpdate.setAmount(newAmount);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(this, "Invalid amount input.");
-                        return;
+                    if (!amountField.getText().isEmpty()) {
+                        itemToUpdate.setAmount(Integer.parseInt(amountField.getText()));
                     }
-                }
-
-                if (!expirationDateText.isEmpty()) {
-                    try {
+                    if (!expirationDateField.getText().isEmpty()) {
                         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-                        Date newExpirationDate = sdf.parse(expirationDateText);
-                        itemToUpdate.setExpirationDate(newExpirationDate);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Invalid expiration date format.");
-                        return;
+                        itemToUpdate.setExpirationDate(sdf.parse(expirationDateField.getText()));
                     }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "Error in updating item details. Check inputs.");
+                    return;
                 }
 
-                // Update the table to reflect changes
                 populateTable();
                 JOptionPane.showMessageDialog(this, "Item updated successfully.");
             }
@@ -157,22 +172,50 @@ public class StockManagementGUI extends JFrame {
         int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
             String itemName = (String) table.getValueAt(selectedRow, 1);
-
-            // Find and remove the item from the list
             items.removeIf(item -> item.getName().equals(itemName));
-
-            // Remove the row from the table
             tableModel.removeRow(selectedRow);
-
             JOptionPane.showMessageDialog(this, "Item deleted successfully.");
         } else {
             JOptionPane.showMessageDialog(this, "Please select an item to delete.");
         }
     }
 
+    public void addItem(Item item) {
+        items.add(item); // Add the new item to the list
+        populateTable(); // Refresh the table to display the new item
+        table.revalidate();
+        table.repaint();
+    }
+
     private void backToMainMenu() {
-        // Close the current window and go back to the main menu
         dispose();
         new MainMenuGUI(); // Assuming you have a MainMenuGUI class
+    }
+
+    private void searchItem() {
+        String searchQuery = searchField.getText().trim().toLowerCase();
+        if (searchQuery.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Enter an item name to search.");
+            return;
+        }
+
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String itemName = tableModel.getValueAt(i, 1).toString().toLowerCase();
+            if (itemName.equals(searchQuery)) {
+                table.setRowSelectionInterval(i, i);
+                table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                JOptionPane.showMessageDialog(this, "Item found: " + itemName);
+                return;
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, "Item not found.");
+    }
+
+    public static void main(String[] args) {
+        // Sample initialization for testing
+        ArrayList<Item> items = new ArrayList<>();
+        items.add(new Item("Category1", "Item1", 100.0, 10, new Date()));
+        new StockManagementGUI(items);
     }
 }
