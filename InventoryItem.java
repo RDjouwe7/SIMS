@@ -1,31 +1,50 @@
-package sims;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.io.Serializable;
 
-public class InventoryItem {
+public class InventoryItem implements Serializable {
     private String name;
     private int quantity;
     private double price;
-    private LocalDate expiryDate;
+    private String expiryDate;
 
     public InventoryItem(String name, int quantity, double price, String expiryDate) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
-        this.expiryDate = LocalDate.parse(expiryDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        this.expiryDate = expiryDate;
     }
 
+    // Getters
     public String getName() {
         return name;
     }
 
-    public LocalDate getExpiryDate() {
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getExpiryDate() {
         return expiryDate;
+    }
+
+    // Setters (for updating item details)
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setExpiryDate(String expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     @Override
     public String toString() {
-        return String.format("Item: %s | Quantity: %d | Price: %.2f | Expiry Date: %s",
-                name, quantity, price, expiryDate);
+        return "Item: " + name + " | Quantity: " + quantity + " | Price: $" + price + " | Expiry Date: " + expiryDate;
     }
 }

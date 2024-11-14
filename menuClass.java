@@ -1,18 +1,26 @@
-package sims;
-
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class menuClass {
     private InventoryManager inventoryManager;
     private Scanner scanner;
+    private loginMenu login;
 
     public menuClass() {
         this.inventoryManager = new InventoryManager();
         this.scanner = new Scanner(System.in);
+        this.login = new loginMenu();
     }
 
     public void displayMenu() {
+        System.out.println("Welcome to the Smart Inventory Management System!");
+        System.out.println("Please log in to continue.");
+
+        if (!login.authenticate()) {
+            System.out.println("Exiting system.");
+            return;
+        }
+
         while (true) {
             System.out.println("\n--- Smart Inventory Menu ---");
             System.out.println("1. Add New Item");
@@ -29,7 +37,7 @@ public class menuClass {
                 choice = scanner.nextInt();
             } catch (InputMismatchException e) {
                 System.out.println("Please enter a valid integer.");
-                scanner.next(); // Clear the invalid input
+                scanner.next();
                 continue;
             }
 
@@ -51,7 +59,7 @@ public class menuClass {
 
     private void addItem() {
         System.out.print("Enter item name: ");
-        scanner.nextLine(); // Clear newline character from buffer
+        scanner.nextLine();
         String name = scanner.nextLine();
         System.out.print("Enter quantity: ");
         int quantity = scanner.nextInt();
@@ -65,11 +73,57 @@ public class menuClass {
     }
 
     private void updateItem() {
-        // Implementation for updating item
+        System.out.print("Enter the name of the item to update: ");
+        scanner.nextLine(); // Consume newline
+        String name = scanner.nextLine();
+
+        if (!inventoryManager.itemExists(name)) {
+            System.out.println("Item not found.");
+            return;
+        }
+
+        System.out.println("What would you like to update?");
+        System.out.println("1. Quantity");
+        System.out.println("2. Price");
+        System.out.println("3. Expiration Date");
+        System.out.print("Choose an option: ");
+        int choice = scanner.nextInt();
+
+        switch (choice) {
+            case 1:
+                System.out.print("Enter new quantity: ");
+                int newQuantity = scanner.nextInt();
+                inventoryManager.updateQuantity(name, newQuantity);
+                System.out.println("Quantity updated successfully.");
+                break;
+            case 2:
+                System.out.print("Enter new price: ");
+                double newPrice = scanner.nextDouble();
+                inventoryManager.updatePrice(name, newPrice);
+                System.out.println("Price updated successfully.");
+                break;
+            case 3:
+                System.out.print("Enter new expiration date (yyyy-mm-dd): ");
+                scanner.nextLine();
+                String newExpiryDate = scanner.nextLine();
+                inventoryManager.updateExpiryDate(name, newExpiryDate);
+                System.out.println("Expiration date updated successfully.");
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
     }
 
     private void deleteItem() {
-        // Implementation for deleting item
+        System.out.print("Enter the name of the item to delete: ");
+        scanner.nextLine(); // Consume newline
+        String name = scanner.nextLine();
+
+        if (inventoryManager.deleteItem(name)) {
+            System.out.println("Item deleted successfully.");
+        } else {
+            System.out.println("Item not found.");
+        }
     }
 
     private void listItems() {
@@ -83,5 +137,9 @@ public class menuClass {
     private void generateReport() {
         inventoryManager.generateReport();
     }
+    
+    public static void main(String[] args) {
+        menuClass caller = new menuClass();
+        caller.displayMenu();
+    }
 }
-
