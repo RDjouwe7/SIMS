@@ -7,7 +7,7 @@ import java.util.List;
 
 public class StockManagementGUI extends JFrame {
     private JTable stockTable;
-    private JButton returnButton, updateButton, deleteButton;
+    private JButton returnButton, updateButton, deleteButton, searchButton;
     private static final String FILE_PATH = "inventorydata.txt";
     private List<String[]> stockData;
 
@@ -28,16 +28,19 @@ public class StockManagementGUI extends JFrame {
         returnButton = new JButton("Return to Main Menu");
         updateButton = new JButton("Update Item");
         deleteButton = new JButton("Delete Item");
+        searchButton = new JButton("Search Item");
 
         buttonPanel.add(returnButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
+        buttonPanel.add(searchButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
         // Add action listeners to buttons
         returnButton.addActionListener(e -> returnToMainMenu());
         updateButton.addActionListener(e -> updateItem());
         deleteButton.addActionListener(e -> deleteItem());
+        searchButton.addActionListener(e -> searchItem());
 
         // Load stock data into the table
         loadStockData();
@@ -59,36 +62,29 @@ public class StockManagementGUI extends JFrame {
     }
 
     private void returnToMainMenu() {
-        // Dispose the current window and show the main menu (assumes a MainMenuGUI class)
         dispose();
-        new MainMenuGUI().setVisible(true);  // Make sure MainMenuGUI exists and is implemented
+        new MainMenuGUI().setVisible(true);
     }
 
     private void updateItem() {
         int selectedRow = stockTable.getSelectedRow();
         if (selectedRow >= 0) {
-            // Get the selected item details
             String oldName = (String) stockTable.getValueAt(selectedRow, 0);
             String oldQuantity = stockTable.getValueAt(selectedRow, 1).toString();
             String oldPrice = stockTable.getValueAt(selectedRow, 2).toString();
             String oldExpiry = (String) stockTable.getValueAt(selectedRow, 3);
 
-            // Ask user for new values using input dialogs
             String name = JOptionPane.showInputDialog(this, "Enter new name:", oldName);
             String quantity = JOptionPane.showInputDialog(this, "Enter new quantity:", oldQuantity);
             String price = JOptionPane.showInputDialog(this, "Enter new price:", oldPrice);
             String expiryDate = JOptionPane.showInputDialog(this, "Enter new expiry date (yyyy-MM-dd):", oldExpiry);
 
-            // Update the table
             stockTable.setValueAt(name, selectedRow, 0);
             stockTable.setValueAt(Integer.parseInt(quantity), selectedRow, 1);
             stockTable.setValueAt(Double.parseDouble(price), selectedRow, 2);
             stockTable.setValueAt(expiryDate, selectedRow, 3);
 
-            // Update the stockData list
             stockData.set(selectedRow, new String[]{name, quantity, price, expiryDate});
-
-            // Save updated data back to the file
             saveStockData();
             JOptionPane.showMessageDialog(this, "Item updated successfully!");
         } else {
@@ -99,14 +95,9 @@ public class StockManagementGUI extends JFrame {
     private void deleteItem() {
         int selectedRow = stockTable.getSelectedRow();
         if (selectedRow >= 0) {
-            // Remove the selected row from the table
             DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
             model.removeRow(selectedRow);
-
-            // Remove the item from the stockData list
             stockData.remove(selectedRow);
-
-            // Save updated data back to the file
             saveStockData();
             JOptionPane.showMessageDialog(this, "Item deleted successfully!");
         } else {
@@ -122,6 +113,31 @@ public class StockManagementGUI extends JFrame {
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error saving stock data: " + e.getMessage());
+        }
+    }
+
+    private void searchItem() {
+        String query = JOptionPane.showInputDialog(this, "Enter item name to search:");
+        if (query == null || query.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Search query cannot be empty.");
+            return;
+        }
+
+        DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+        boolean found = false;
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String itemName = model.getValueAt(i, 0).toString();
+            if (itemName.equalsIgnoreCase(query)) {
+                stockTable.setRowSelectionInterval(i, i);  // Highlight the row
+                stockTable.scrollRectToVisible(stockTable.getCellRect(i, 0, true));  // Scroll to the row
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            JOptionPane.showMessageDialog(this, "Item not found.");
         }
     }
 

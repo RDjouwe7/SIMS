@@ -15,41 +15,36 @@ public class InventoryManagementGUI extends JFrame {
     public InventoryManagementGUI() {
         // Set up the frame
         setTitle("Inventory Management");
-        setSize(500, 350);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // Close only the Inventory window
-        setLocationRelativeTo(null);  // Center the window
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Full-screen mode
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close only the Inventory window
         setLayout(new BorderLayout());
 
         // Create a panel for the form fields
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new GridLayout(5, 2, 10, 10));  // 5 rows, 2 columns
-        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
         // Add input fields
-        formPanel.add(new JLabel("Item Name:"));
+        formPanel.add(new JLabel("Item Name:", JLabel.RIGHT));
         nameField = new JTextField();
         formPanel.add(nameField);
 
-        formPanel.add(new JLabel("Quantity:"));
+        formPanel.add(new JLabel("Quantity:", JLabel.RIGHT));
         quantityField = new JTextField();
         formPanel.add(quantityField);
 
-        formPanel.add(new JLabel("Price:"));
+        formPanel.add(new JLabel("Price:", JLabel.RIGHT));
         priceField = new JTextField();
         formPanel.add(priceField);
 
-        formPanel.add(new JLabel("Expiry Date (yyyy-MM-dd):"));
+        formPanel.add(new JLabel("Expiry Date (yyyy-MM-dd):", JLabel.RIGHT));
         expiryDateField = new JTextField();
         formPanel.add(expiryDateField);
 
-        // Add the form panel to the center of the frame
         add(formPanel, BorderLayout.CENTER);
 
         // Add the buttons panel
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout());
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
 
-        // Save button
         saveButton = new JButton("Save Item");
         buttonPanel.add(saveButton);
         saveButton.addActionListener(new ActionListener() {
@@ -59,7 +54,6 @@ public class InventoryManagementGUI extends JFrame {
             }
         });
 
-        // Return button
         returnButton = new JButton("Return to Main Menu");
         buttonPanel.add(returnButton);
         returnButton.addActionListener(new ActionListener() {
@@ -69,7 +63,6 @@ public class InventoryManagementGUI extends JFrame {
             }
         });
 
-        // Add the button panel to the south of the frame
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -88,7 +81,7 @@ public class InventoryManagementGUI extends JFrame {
         try {
             int quantity = Integer.parseInt(quantityText);
             double price = Double.parseDouble(priceText);
-            LocalDate.parse(expiryDate, DATE_FORMATTER);  // Validate the expiry date format
+            LocalDate.parse(expiryDate, DATE_FORMATTER); // Validate the expiry date format
 
             // Save the data to the file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
@@ -106,7 +99,6 @@ public class InventoryManagementGUI extends JFrame {
     }
 
     private void clearFields() {
-        // Clear the input fields after saving
         nameField.setText("");
         quantityField.setText("");
         priceField.setText("");
@@ -114,7 +106,6 @@ public class InventoryManagementGUI extends JFrame {
     }
 
     private void returnToMainMenu() {
-        // Close the current window and open the Main Menu
         dispose();
         new MainMenuGUI().setVisible(true);
     }

@@ -71,7 +71,9 @@ public class MainMenuGUI extends JFrame {
                     JOptionPane.showMessageDialog(null, "Supplier Management selected.");
                     break;
                 case "Reporting & Analysis":
-                    JOptionPane.showMessageDialog(null, "Reporting & Analysis selected.");
+                     dispose();
+                     SwingUtilities.invokeLater(() -> {
+                    new DailyReportGUI().setVisible(true); }); 
                     break;
                 case "User Settings":
                     new SettingsGUI(this).setVisible(true);
