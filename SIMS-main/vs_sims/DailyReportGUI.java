@@ -10,6 +10,7 @@ public class DailyReportGUI extends JFrame {
     private JButton addButton, saveButton, refreshButton, backButton;
     private JLabel totalRevenueLabel;
     private double totalRevenue = 0;
+    private boolean isReportSaved = false; // Tracks whether the report is saved
     private static final String FILE_PATH = "inventorydata.txt";
     private static final String REPORT_FILE = "dailyreport.txt";
     private List<String[]> stockData;
@@ -18,7 +19,7 @@ public class DailyReportGUI extends JFrame {
         // Set up the frame to be full screen
         setTitle("Daily Sales Report");
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Full screen
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close this frame only
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Handle close manually
         setLocationRelativeTo(null); // Center the window
         setLayout(new BorderLayout());
 
@@ -52,11 +53,35 @@ public class DailyReportGUI extends JFrame {
         // Load stock data
         loadStockData();
 
+        // Load persisted sales data
+        loadSalesData();
+
         // Add action listeners
         addButton.addActionListener(e -> addSale());
-        saveButton.addActionListener(e -> saveReport());
-        refreshButton.addActionListener(e -> refreshSales());
-        backButton.addActionListener(e -> returnToStockManagement());
+        saveButton.addActionListener(e -> {
+            saveReport();
+            isReportSaved = true; // Mark report as saved
+        });
+        refreshButton.addActionListener(e -> {
+            if (confirmSaveBeforeAction("refresh the sales")) {
+                refreshSales();
+            }
+        });
+        backButton.addActionListener(e -> {
+            if (confirmSaveBeforeAction("return to Stock Management")) {
+                returnToStockManagement();
+            }
+        });
+
+        // Add a window listener to handle close action
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                if (confirmSaveBeforeAction("exit the application")) {
+                    dispose();
+                }
+            }
+        });
     }
 
     private void loadStockData() {
@@ -71,8 +96,24 @@ public class DailyReportGUI extends JFrame {
         }
     }
 
+    private void loadSalesData() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(REPORT_FILE))) {
+            DefaultTableModel model = (DefaultTableModel) salesTable.getModel();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                model.addRow(data);
+                totalRevenue += Double.parseDouble(data[3]); // Update total revenue
+            }
+            totalRevenueLabel.setText("Total Revenue: $" + String.format("%.2f", totalRevenue));
+        } catch (FileNotFoundException e) {
+            // No report file yet, start fresh
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error loading sales data: " + e.getMessage());
+        }
+    }
+
     private void addSale() {
-        // Prompt user for sale details
         String itemName = JOptionPane.showInputDialog(this, "Enter item name:");
         if (itemName == null || itemName.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Item name cannot be empty.");
@@ -107,77 +148,80 @@ public class DailyReportGUI extends JFrame {
             return;
         }
 
-        // Check stock availability
         int currentStock = Integer.parseInt(item[1]);
         if (quantitySold > currentStock) {
             JOptionPane.showMessageDialog(this, "Insufficient stock. Current stock: " + currentStock);
             return;
         }
 
-        // Update stock and calculate total price
         double pricePerUnit = Double.parseDouble(item[2]);
         double totalPrice = quantitySold * pricePerUnit;
 
-        // Update stock in the list
+        // Update stock
         item[1] = String.valueOf(currentStock - quantitySold);
 
-        // Add sale to the table
         DefaultTableModel model = (DefaultTableModel) salesTable.getModel();
         model.addRow(new Object[]{itemName, quantitySold, pricePerUnit, totalPrice});
 
-        // Update total revenue
         totalRevenue += totalPrice;
         totalRevenueLabel.setText("Total Revenue: $" + String.format("%.2f", totalRevenue));
+        isReportSaved = false; // Mark report as unsaved
     }
 
     private void saveReport() {
-        // Save the sales data to a daily report file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(REPORT_FILE, true))) {
+        try (BufferedWriter reportWriter = new BufferedWriter(new FileWriter(REPORT_FILE))) {
             DefaultTableModel model = (DefaultTableModel) salesTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
-                String itemName = model.getValueAt(i, 0).toString();
-                String quantitySold = model.getValueAt(i, 1).toString();
-                String pricePerUnit = model.getValueAt(i, 2).toString();
-                String totalPrice = model.getValueAt(i, 3).toString();
-                writer.write(itemName + "," + quantitySold + "," + pricePerUnit + "," + totalPrice);
-                writer.newLine();
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    reportWriter.write(model.getValueAt(i, j).toString());
+                    if (j < model.getColumnCount() - 1) {
+                        reportWriter.write(",");
+                    }
+                }
+                reportWriter.newLine();
             }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving daily report: " + e.getMessage());
-            return;
-        }
 
-        // Save updated stock data back to the inventory file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            for (String[] stockItem : stockData) {
-                writer.write(String.join(",", stockItem));
-                writer.newLine();
+            try (BufferedWriter stockWriter = new BufferedWriter(new FileWriter(FILE_PATH))) {
+                for (String[] stockItem : stockData) {
+                    stockWriter.write(String.join(",", stockItem));
+                    stockWriter.newLine();
+                }
             }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error updating stock data: " + e.getMessage());
-            return;
-        }
 
-        JOptionPane.showMessageDialog(this, "Daily report saved successfully!");
+            JOptionPane.showMessageDialog(this, "Report and stock data saved successfully!");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving report: " + e.getMessage());
+        }
     }
 
     private void refreshSales() {
-        // Clear the table
         DefaultTableModel model = (DefaultTableModel) salesTable.getModel();
-        model.setRowCount(0);
-
-        // Reset total revenue
+        model.setRowCount(0); // Clear the table
         totalRevenue = 0;
         totalRevenueLabel.setText("Total Revenue: $0.00");
+        new File(REPORT_FILE).delete(); // Delete the report file
+        JOptionPane.showMessageDialog(this, "Sales refreshed!");
+    }
 
-        // Clear the report file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(REPORT_FILE))) {
-            writer.write(""); // Empty the file
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error refreshing report file: " + e.getMessage());
+    private boolean confirmSaveBeforeAction(String action) {
+        if (!isReportSaved) {
+            int choice = JOptionPane.showConfirmDialog(
+                this,
+                "You have unsaved changes. Would you like to save the report before you " + action + "?",
+                "Unsaved Changes",
+                JOptionPane.YES_NO_CANCEL_OPTION
+            );
+            if (choice == JOptionPane.YES_OPTION) {
+                saveReport();
+                isReportSaved = true;
+                return true; // Proceed after saving
+            } else if (choice == JOptionPane.NO_OPTION) {
+                return true; // Proceed without saving
+            } else {
+                return false; // Cancel the action
+            }
         }
-
-        JOptionPane.showMessageDialog(this, "Screen and report refreshed for a new day!");
+        return true; // Proceed if no unsaved changes
     }
 
     private void returnToStockManagement() {

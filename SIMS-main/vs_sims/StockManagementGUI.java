@@ -3,11 +3,13 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class StockManagementGUI extends JFrame {
     private JTable stockTable;
-    private JButton returnButton, updateButton, deleteButton, searchButton;
+    private JButton returnButton, updateButton, deleteButton, searchButton, sortButton;
     private static final String FILE_PATH = "inventorydata.txt";
     private List<String[]> stockData;
 
@@ -29,11 +31,13 @@ public class StockManagementGUI extends JFrame {
         updateButton = new JButton("Update Item");
         deleteButton = new JButton("Delete Item");
         searchButton = new JButton("Search Item");
+        sortButton = new JButton("Sort Items"); // New Sort button
 
         buttonPanel.add(returnButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(searchButton);
+        buttonPanel.add(sortButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
         // Add action listeners to buttons
@@ -41,6 +45,7 @@ public class StockManagementGUI extends JFrame {
         updateButton.addActionListener(e -> updateItem());
         deleteButton.addActionListener(e -> deleteItem());
         searchButton.addActionListener(e -> searchItem());
+        sortButton.addActionListener(e -> sortItems()); // Add sort action
 
         // Load stock data into the table
         loadStockData();
@@ -139,6 +144,51 @@ public class StockManagementGUI extends JFrame {
         if (!found) {
             JOptionPane.showMessageDialog(this, "Item not found.");
         }
+    }
+
+    private void sortItems() {
+        // Ask the user for sorting criteria
+        String[] options = {"Name", "Quantity", "Price", "Expiry Date"};
+        String choice = (String) JOptionPane.showInputDialog(
+            this, 
+            "Choose a column to sort by:", 
+            "Sort Options", 
+            JOptionPane.PLAIN_MESSAGE, 
+            null, 
+            options, 
+            options[0]
+        );
+
+        if (choice == null) return;
+
+        // Comparator based on user choice
+        Comparator<String[]> comparator;
+        switch (choice) {
+            case "Quantity":
+                comparator = Comparator.comparingInt(o -> Integer.parseInt(o[1]));
+                break;
+            case "Price":
+                comparator = Comparator.comparingDouble(o -> Double.parseDouble(o[2]));
+                break;
+            case "Expiry Date":
+                comparator = Comparator.comparing(o -> o[3]);
+                break;
+            case "Name":
+            default:
+                comparator = Comparator.comparing(o -> o[0].toLowerCase());
+        }
+
+        // Sort the stock data
+        Collections.sort(stockData, comparator);
+
+        // Update the table
+        DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+        model.setRowCount(0); // Clear the table
+        for (String[] row : stockData) {
+            model.addRow(new Object[]{row[0], Integer.parseInt(row[1]), Double.parseDouble(row[2]), row[3]});
+        }
+
+        JOptionPane.showMessageDialog(this, "Items sorted by " + choice + "!");
     }
 
     public static void main(String[] args) {
