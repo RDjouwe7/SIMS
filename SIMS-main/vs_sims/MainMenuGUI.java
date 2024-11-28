@@ -4,33 +4,42 @@ import java.util.ArrayList;
 
 public class MainMenuGUI extends JFrame {
 
-    private boolean isDarkMode = false;  // Track whether dark mode is enabled
+    private boolean isDarkMode = false;  // Track whether dark mode is enabled for the settings
     private JPanel panel;
 
-    // Example ArrayList of menu items
     private ArrayList<String> menuItems;
 
     public MainMenuGUI() {
 
+         // Set frame properties
+
+                  // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png"); // Logo icon
         setResizable(false);
-        ImageIcon icon = new ImageIcon("sims.png"); // Logo icon
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setIconImage(icon.getImage());
+
         setTitle("SIMS - Main Menu");
         setSize(1500, 800);
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        // Added a Window Listener for exit confirmation
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                showExitConfirmation();
+            }
+        });
 
         // Initialize the ArrayList of menu items
         menuItems = new ArrayList<>();
         menuItems.add("Inventory Management");
         menuItems.add("Stock Management");
-        //menuItems.add("Demand Forecasting");
         menuItems.add("Expiration/Stock Info");
-       // menuItems.add("Supplier Management");
         menuItems.add("Reporting & Analysis");
         menuItems.add("User Settings");
         menuItems.add("Help & Support");
-        menuItems.add("Exit");
+        menuItems.add("Sign Out");
 
         // Create panel for buttons
         panel = new JPanel();
@@ -43,37 +52,32 @@ public class MainMenuGUI extends JFrame {
 
         // Add the panel to the frame
         add(panel);
-        updateUI(); // Apply the initial UI settings
+        updateUI(); // This is for UI settings
         setVisible(true);
     }
 
-    // Helper method to add buttons to the panel
+    // we need a method to add buttons to the panel
     private void addMenuButton(JPanel panel, String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.BOLD, 20));
 
-        // Define the action for each button based on its text
+        // we need if statements or a switch case here for each button
         button.addActionListener(e -> {
             switch (text) {
                 case "Inventory Management":
-                    openInventoryManagement();
+                    dispose(); // Close the current Main Menu window
+                    SwingUtilities.invokeLater(() -> new InventoryManagementGUI().setVisible(true));
                     break;
                 case "Stock Management":
-                    openStockManagement();
-                    break;
-                case "Demand Forecasting":
-                    JOptionPane.showMessageDialog(null, "Demand Forecasting selected.");
+                    dispose(); // Close the current Main Menu window
+                    SwingUtilities.invokeLater(() -> new StockManagementGUI().setVisible(true));
                     break;
                 case "Expiration/Stock Info":
                     CheckExpiration.checkExpiration();
                     break;
-                case "Supplier Management":
-                    JOptionPane.showMessageDialog(null, "Supplier Management selected.");
-                    break;
                 case "Reporting & Analysis":
-                     dispose();
-                     SwingUtilities.invokeLater(() -> {
-                    new DailyReportGUI().setVisible(true); }); 
+                    dispose();
+                    SwingUtilities.invokeLater(() -> new DailyReportGUI().setVisible(true));
                     break;
                 case "User Settings":
                     new SettingsGUI(this).setVisible(true);
@@ -81,8 +85,8 @@ public class MainMenuGUI extends JFrame {
                 case "Help & Support":
                     new HelpSupportGUI().setVisible(true);
                     break;
-                case "Exit":
-                    System.exit(0);
+                case "Sign Out":
+                    showreturnConfirmation();
                     break;
             }
         });
@@ -90,18 +94,21 @@ public class MainMenuGUI extends JFrame {
         panel.add(button);
     }
 
-    // Method to open Inventory Management GUI
-    private void openInventoryManagement() {
-        dispose(); // Close the current Main Menu window
-        SwingUtilities.invokeLater(() -> {
-            new InventoryManagementGUI().setVisible(true); });// Open the Inventory Management window
+    // Method to confirm exit
+    private void showExitConfirmation() {
+        int choice = JOptionPane.showConfirmDialog(this,"Are you sure you want to exit?","Confirm Exit",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            System.exit(0);
+        }
     }
 
-    // Method to open Stock Management GUI
-    private void openStockManagement() {
-        dispose(); // Close the current Main Menu window
-        SwingUtilities.invokeLater(() -> {
-            new StockManagementGUI().setVisible(true); }); // Open the Stock Management window
+    //Method to confirm return to Login
+    private void showreturnConfirmation() {
+        int choice = JOptionPane.showConfirmDialog(this,"Are you sure you want to sign out? Unsaved changes will be lost.","Confirm Sign Out",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> new Login().setVisible(true));
+        }
     }
 
     // Method to toggle Dark Mode
@@ -141,8 +148,9 @@ public class MainMenuGUI extends JFrame {
         }
     }
 
-    // Main method to launch the MainMenuGUI window
+    // Main method to launch the MainMenuGUI window by itself
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new MainMenuGUI());
     }
 }
+

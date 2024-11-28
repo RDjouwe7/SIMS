@@ -16,7 +16,10 @@ public class DailyReportGUI extends JFrame {
     private List<String[]> stockData;
 
     public DailyReportGUI() {
-        // Set up the frame to be full screen
+       // Set frame properties
+                    // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png");
+        setIconImage(icon.getImage());
         setTitle("Daily Sales Report");
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Full screen
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Handle close manually
@@ -77,8 +80,9 @@ public class DailyReportGUI extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                if (confirmSaveBeforeAction("exit the application")) {
+                if (confirmSaveBeforeAction("exit")) {
                     dispose();
+                    new MainMenuGUI().setVisible(true);
                 }
             }
         });

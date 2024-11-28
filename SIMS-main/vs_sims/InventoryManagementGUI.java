@@ -13,37 +13,68 @@ public class InventoryManagementGUI extends JFrame {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public InventoryManagementGUI() {
-        // Set up the frame
+        // Set frame properties
+                    // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png");
+        setIconImage(icon.getImage());
         setTitle("Inventory Management");
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Full-screen mode
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close only the Inventory window
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // We are disposing this frame
+        setSize(800, 600); 
+        setResizable(true); 
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Create a panel for the form fields
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        // Adding a window listener to call the Main Menu on close
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                returnToMainMenu(); 
+            }
+        });
+
+        // Creating a  form panel for the form fields with GridBagLayout (CENTER)
+        JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-        // Add input fields
-        formPanel.add(new JLabel("Item Name:", JLabel.RIGHT));
+        // we need GridBagConstraints to keep everything in like a box
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20); // Add space between components
+        gbc.anchor = GridBagConstraints.WEST; // Align labels to the left
+        gbc.fill = GridBagConstraints.HORIZONTAL; // Make text fields expand to fill available space
+
+        // Add input fields with labels
+        formPanel.add(new JLabel("Item Name:"), gbc);
+        gbc.gridx = 1; // Move to the next column for input field
         nameField = new JTextField();
-        formPanel.add(nameField);
+        nameField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
+        formPanel.add(nameField, gbc);
 
-        formPanel.add(new JLabel("Quantity:", JLabel.RIGHT));
+        gbc.gridx = 0; //Back to the first column for the next label
+        formPanel.add(new JLabel("Quantity:"), gbc);
+        gbc.gridx = 1;
         quantityField = new JTextField();
-        formPanel.add(quantityField);
+        quantityField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
+        formPanel.add(quantityField, gbc);
 
-        formPanel.add(new JLabel("Price:", JLabel.RIGHT));
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Price:"), gbc);
+        gbc.gridx = 1;
         priceField = new JTextField();
-        formPanel.add(priceField);
+        priceField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
+        formPanel.add(priceField, gbc);
 
-        formPanel.add(new JLabel("Expiry Date (yyyy-MM-dd):", JLabel.RIGHT));
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Expiry Date (yyyy-MM-dd):"), gbc);
+        gbc.gridx = 1;
         expiryDateField = new JTextField();
-        formPanel.add(expiryDateField);
+        expiryDateField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
+        formPanel.add(expiryDateField, gbc);
 
         add(formPanel, BorderLayout.CENTER);
 
-        // Add the buttons panel
+        // Add the buttons panel (SOUTH)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        buttonPanel.setPreferredSize(new Dimension(getWidth(), 60)); // Make button panel span the width of the window
 
         saveButton = new JButton("Save Item");
         buttonPanel.add(saveButton);
@@ -67,7 +98,7 @@ public class InventoryManagementGUI extends JFrame {
     }
 
     private void saveItem() {
-        // Input validation
+        // User_Input checker 
         String name = nameField.getText();
         String quantityText = quantityField.getText();
         String priceText = priceField.getText();
@@ -83,7 +114,7 @@ public class InventoryManagementGUI extends JFrame {
             double price = Double.parseDouble(priceText);
             LocalDate.parse(expiryDate, DATE_FORMATTER); // Validate the expiry date format
 
-            // Save the data to the file
+            // Saving the data to the file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
                 writer.write(name + "," + quantity + "," + price + "," + expiryDate);
                 writer.newLine();
@@ -98,6 +129,7 @@ public class InventoryManagementGUI extends JFrame {
         }
     }
 
+    // We need to empty the fields too
     private void clearFields() {
         nameField.setText("");
         quantityField.setText("");

@@ -1,11 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 
 public class Login extends JFrame {
 
-    private static final String USERNAME = "";
-    private static final String PASSWORD = "";
+    private static final String USERNAME = ""; // variable for the username
+    private static final String PASSWORD = ""; // variable for the password
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -17,35 +16,53 @@ public class Login extends JFrame {
         setLayout(new BorderLayout());
 
         // Set frame properties
-        ImageIcon icon = new ImageIcon("sims.png");
-        if (icon.getImage() == null) {
-            System.out.println("Logo image not found!");
-        } else {
-            setIconImage(icon.getImage());
-        }
+
+                     // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png");
+        setIconImage(icon.getImage());
+
         setTitle("Sims Login");
-        setSize(600, 600);
+        setSize(700, 740);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Creating welcome and quote labels
+      // We are going to create Three(3) Panels in this JFrame
+
+        // Creating  Message Panel with its labels (NORTH)
+
+        JPanel messagePanel = new JPanel(new GridLayout(2, 1));
+
         JLabel welcomeLabel = new JLabel("Welcome to SIMS", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-        JLabel quoteLabel = new JLabel("We’re glad to have you here. Let's get started", SwingConstants.CENTER);
-        quoteLabel.setFont(new Font("Arial", Font.ITALIC, 16));
+        JLabel messageLabel = new JLabel("We’re glad to have you here. Let's get started", SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.ITALIC, 16));
 
-        JPanel messagePanel = new JPanel(new GridLayout(2, 1));
+
         messagePanel.add(welcomeLabel);
-        messagePanel.add(quoteLabel);
-        add(messagePanel, BorderLayout.NORTH);
+        messagePanel.add(messageLabel);
         messagePanel.setBackground(Color.gray);
 
-        // Create login panel for the form
+        add(messagePanel, BorderLayout.NORTH);
+
+        // Creating the 2nd Panel for the background Image withs its label (CENTER)
+
+        ImageIcon backimage = new ImageIcon("logo.jpg");
+
+        JPanel backgroundPanel = new JPanel();
+    
+        JLabel backgroundLabel = new JLabel(backimage);
+
+        backgroundPanel.add(backgroundLabel);
+
+        add(backgroundPanel, BorderLayout.CENTER);
+
+        // Creating the 3rd Panel for the Login form withs its labels (SOUTH)
         JPanel panel = new JPanel();
         panel.setBackground(Color.gray);
         panel.setLayout(new GridLayout(3, 2, 50, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(40, 100, 40, 100));
+
 
         JLabel userLabel = new JLabel("Username:", SwingConstants.CENTER);
         userLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -65,27 +82,8 @@ public class Login extends JFrame {
 
         add(panel, BorderLayout.SOUTH);
 
-        // Background image panel with overridden paintComponent
-        JPanel ipanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                
-                // Ensure image exists
-                File imgFile = new File("sims_bkg.png");
-                if (!imgFile.exists()) {
-                    System.out.println("Image not found at: " + imgFile.getAbsolutePath());
-                } else {
-                    ImageIcon infoIcon = new ImageIcon("sims_bkg.png");
-                    Image img = infoIcon.getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH);
-                    g.drawImage(img, 0, 0, this);  // Draw the image on the panel
-                }
-            }
-        };
-        ipanel.setLayout(new BorderLayout());
-        add(ipanel, BorderLayout.CENTER);
 
-        // Login action
+        // Login action calls the handleLogin method
         loginButton.addActionListener(e -> handleLogin());
     }
 
@@ -93,17 +91,27 @@ public class Login extends JFrame {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
+        // Check if credentials are right!
         if (USERNAME.equals(username) && PASSWORD.equals(password)) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
-            this.dispose();
+            
+            ImageIcon successIcon = new ImageIcon("check.png");
+
+        JOptionPane.showMessageDialog( null,  "    Login successful!", "Access Granted", JOptionPane.INFORMATION_MESSAGE, successIcon);
+            
+
+            //Removes the login Page and calls the Main Menu
+            this.dispose(); 
             new MainMenuGUI();
+
         } else {
             loginAttempts++;
-            if (loginAttempts >= 5) {
-                JOptionPane.showMessageDialog(this, "Maximum login attempts reached. Access denied.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (loginAttempts >= 2) {
+                JOptionPane.showMessageDialog(this, "Maximum login attempts reached. Access denied.", "Access Denied", JOptionPane.ERROR_MESSAGE);
+                
                 loginButton.setEnabled(false);
+                JOptionPane.showMessageDialog(null, "Please see a manager for assistance. Contact Support if problem persists.", "System Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, "Invalid username or password.", "Try Again", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Invalid username or password.", "Login Failed", JOptionPane.WARNING_MESSAGE);
             }
         }
     }

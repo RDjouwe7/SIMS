@@ -6,9 +6,12 @@ import java.awt.event.ActionListener;
 public class HelpSupportGUI extends JFrame {
 
     public HelpSupportGUI() {
-        setTitle("Help & Support");
-        ImageIcon icon = new ImageIcon("sims.png"); // Logo icon
+         // Set frame properties
+
+                  // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png"); 
         setIconImage(icon.getImage());
+        setTitle("Help & Support");
         setSize(400, 300);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -56,7 +59,8 @@ public class HelpSupportGUI extends JFrame {
     private void displayFAQ() {
         String faqText = "<html><h2>Frequently Asked Questions</h2>" +
                 "<p><b>Q1: How do I change the password?</b><br>A: Contact Support</p>" +
-                "<p><b>Q2: How can I close the Main Menu page?</b><br>A: You can only close the Main page using the Exit button</p></html>";
+                "<p><b>Q2: Can I log in from multiple devices?</b><br>A: Yes, you can log in from any device with your credentials.</p>"+
+                "<p><b>Q3: How do I contact support?</b><br>A: Use the 'Help & Support' section in the main menu.</p></html>";
         
         JOptionPane.showMessageDialog(this, faqText, "FAQs", JOptionPane.INFORMATION_MESSAGE);
     }
@@ -64,7 +68,7 @@ public class HelpSupportGUI extends JFrame {
     // Display Troubleshooting Information
     private void displayTroubleshooting() {
         String troubleshootingText = "<html><h2>Troubleshooting Guide</h2>" +
-                "<p><b>Issue:</b> Unable to print the pdf <br>Check your internet connection or restart the app</p>" +
+                "<p><b>Issue:</b> Menu buttons are unresponsive <br>Contact support</p>" +
                 "<p><b>Issue:</b> Application is running slowly.<br>Try closing other programs or restarting the app.</p>" +  "<br>" +
                 "<p>For more help, contact support.</p></html>";
         

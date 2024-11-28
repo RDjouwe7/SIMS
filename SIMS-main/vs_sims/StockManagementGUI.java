@@ -14,16 +14,27 @@ public class StockManagementGUI extends JFrame {
     private List<String[]> stockData;
 
     public StockManagementGUI() {
-        // Set up the frame to be full screen
+        // Set frame properties
+                    // Setting the Icon, Title and sizes
+        ImageIcon icon = new ImageIcon("mainlogo.png");
+        setIconImage(icon.getImage());
         setTitle("Stock Management");
+        setResizable(false);
         setExtendedState(JFrame.MAXIMIZED_BOTH);  // Make the frame full screen
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // Dispose on close instead of exit
         setLocationRelativeTo(null);  // Center the window
         setLayout(new BorderLayout());
 
-        // Create the stock table with column headers
+        // Adding a window listener to call the Main Menu on close
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                returnToMainMenu(); 
+            }
+        });
+        // Creating the stock table with column headers
         stockTable = new JTable(new DefaultTableModel(new String[]{"Name", "Quantity", "Price", "Expiry Date"}, 0));
-        add(new JScrollPane(stockTable), BorderLayout.CENTER);  // Add the table to the center
+        add(new JScrollPane(stockTable), BorderLayout.CENTER); 
 
         // Create buttons
         JPanel buttonPanel = new JPanel();

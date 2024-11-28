@@ -33,18 +33,26 @@ public class CheckExpiration {
                 }
 
                 // Check if the item quantity is less than 10
-                if (quantity < 10) {
+                if (quantity <= 10) {
                     isQuantityLow = true;
                 }
 
                 // Display alert for expiration or low quantity
                 if (isExpirationClose) {
-                    JOptionPane.showMessageDialog(null, "The item '" + name + "' is close to expiration! Expiry Date: " + expiryDate);
+                    ImageIcon expiredIcon = new ImageIcon("expired.png");
+
+                    JOptionPane.showMessageDialog(null, 
+                        "The item '" + name + "' is nearing its expiration date! " +
+                        "Expiry Date: " + expiryDate + ". Please consider using or restocking soon.","Warning", JOptionPane.INFORMATION_MESSAGE,expiredIcon);
                     isExpirationClose = false; // Reset the expiration flag after showing the message
                 }
-
+                
                 if (isQuantityLow) {
-                    JOptionPane.showMessageDialog(null, "The item '" + name + "' has low stock! Quantity: " + quantity);
+                    ImageIcon restockIcon = new ImageIcon("restock.png");
+
+                    JOptionPane.showMessageDialog(null, 
+                        "The item '" + name + "' has low stock! " +
+                        "Current Quantity: " + quantity + ". Please restock or review inventory.","Alert",JOptionPane.INFORMATION_MESSAGE,restockIcon);
                     isQuantityLow = false; // Reset the quantity flag after showing the message
                 }
             }
