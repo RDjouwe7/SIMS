@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CheckExpiration {
 
@@ -12,52 +14,83 @@ public class CheckExpiration {
     public static void checkExpiration() {
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
-            boolean isExpirationClose = false;
-            boolean isQuantityLow = false;
+            List<String> expirationWarnings = new ArrayList<>();
+            List<String> restockWarnings = new ArrayList<>();
 
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
-                String name = data[0];
-                int quantity = Integer.parseInt(data[1]);
-                @SuppressWarnings("unused")
-                double price = Double.parseDouble(data[2]);
-                String expiryDateString = data[3];
+                
+                if (data.length < 4) {
+                    continue; 
+                }
+
+                String name = data[0].trim();
+                int quantity;
+                //double price;
+                String expiryDateString = data[3].trim();
+
+                try {
+                    quantity = Integer.parseInt(data[1].trim());
+                    //price = Double.parseDouble(data[2].trim());
+                } catch (NumberFormatException e) {
+                    // Handle any parsing error and skip this line if data is invalid
+                    System.err.println("Skipping invalid data: " + line);
+                    continue;
+                }
 
                 // Check if the item is close to expiration
-                LocalDate expiryDate = LocalDate.parse(expiryDateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                LocalDate expiryDate;
+                try {
+                    expiryDate = LocalDate.parse(expiryDateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } catch (Exception e) {
+                    // If the date parsing fails, skip the item
+                    System.err.println("Skipping item with invalid expiry date: " + name);
+                    continue;
+                }
+
                 LocalDate currentDate = LocalDate.now();
                 LocalDate expirationThreshold = currentDate.plusDays(3); // Expiration threshold set to 3 days
 
                 if (expiryDate.isBefore(expirationThreshold) || expiryDate.isEqual(expirationThreshold)) {
-                    isExpirationClose = true;
+                    expirationWarnings.add("Item: '" + name + "', Expiry Date: " + expiryDate);
                 }
 
-                // Check if the item quantity is less than 10
+                // Check if the item quantity is less than or equal to 10
                 if (quantity <= 10) {
-                    isQuantityLow = true;
-                }
-
-                // Display alert for expiration or low quantity
-                if (isExpirationClose) {
-                    ImageIcon expiredIcon = new ImageIcon("expired.png");
-
-                    JOptionPane.showMessageDialog(null, 
-                        "The item '" + name + "' is nearing its expiration date! " +
-                        "Expiry Date: " + expiryDate + ". Please consider using or restocking soon.","Warning", JOptionPane.INFORMATION_MESSAGE,expiredIcon);
-                    isExpirationClose = false; // Reset the expiration flag after showing the message
-                }
-                
-                if (isQuantityLow) {
-                    ImageIcon restockIcon = new ImageIcon("restock.png");
-
-                    JOptionPane.showMessageDialog(null, 
-                        "The item '" + name + "' has low stock! " +
-                        "Current Quantity: " + quantity + ". Please restock or review inventory.","Alert",JOptionPane.INFORMATION_MESSAGE,restockIcon);
-                    isQuantityLow = false; // Reset the quantity flag after showing the message
+                    restockWarnings.add("Item: '" + name + "', Current Quantity: " + quantity);
                 }
             }
+
+            
+            if (!expirationWarnings.isEmpty()) {
+                ImageIcon expiredIcon = new ImageIcon("expired.png"); 
+                JOptionPane.showMessageDialog(
+                        null,
+                        "The following items are nearing their expiration date:\n" + String.join("\n", expirationWarnings),
+                        "Expiration Warning",
+                        JOptionPane.INFORMATION_MESSAGE,
+                        expiredIcon
+                );
+            }
+
+
+            if (!restockWarnings.isEmpty()) {
+                ImageIcon restockIcon = new ImageIcon("restock.png");
+                JOptionPane.showMessageDialog(
+                        null,
+                        "The following items have low stock:\n" + String.join("\n", restockWarnings),
+                        "Restock Alert",
+                        JOptionPane.INFORMATION_MESSAGE,
+                        restockIcon
+                );
+            }
+
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error reading inventory data: " + e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        checkExpiration();
     }
 }

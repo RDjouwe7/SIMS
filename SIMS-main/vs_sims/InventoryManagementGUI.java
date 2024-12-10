@@ -8,19 +8,19 @@ import java.time.format.DateTimeFormatter;
 
 public class InventoryManagementGUI extends JFrame {
     private JTextField nameField, quantityField, priceField, expiryDateField;
+    private JComboBox<String> categoryComboBox;
     private JButton saveButton, returnButton;
     private static final String FILE_PATH = "inventorydata.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public InventoryManagementGUI() {
         // Set frame properties
-                    // Setting the Icon, Title and sizes
         ImageIcon icon = new ImageIcon("mainlogo.png");
         setIconImage(icon.getImage());
         setTitle("Inventory Management");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // We are disposing this frame
-        setSize(800, 600); 
-        setResizable(true); 
+        setSize(800, 600);
+        setResizable(true);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
@@ -28,11 +28,11 @@ public class InventoryManagementGUI extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                returnToMainMenu(); 
+                returnToMainMenu();
             }
         });
 
-        // Creating a  form panel for the form fields with GridBagLayout (CENTER)
+        // Creating a form panel for the form fields with GridBagLayout (CENTER)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
@@ -49,7 +49,7 @@ public class InventoryManagementGUI extends JFrame {
         nameField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
         formPanel.add(nameField, gbc);
 
-        gbc.gridx = 0; //Back to the first column for the next label
+        gbc.gridx = 0; // Back to the first column for the next label
         formPanel.add(new JLabel("Quantity:"), gbc);
         gbc.gridx = 1;
         quantityField = new JTextField();
@@ -62,6 +62,13 @@ public class InventoryManagementGUI extends JFrame {
         priceField = new JTextField();
         priceField.setPreferredSize(new Dimension(300, 30)); // Set preferred size
         formPanel.add(priceField, gbc);
+
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Category:"), gbc);
+        gbc.gridx = 1;
+        String[] categories = {"Food", "Non-Food"};
+        categoryComboBox = new JComboBox<>(categories);
+        formPanel.add(categoryComboBox, gbc);
 
         gbc.gridx = 0;
         formPanel.add(new JLabel("Expiry Date (yyyy-MM-dd):"), gbc);
@@ -98,37 +105,77 @@ public class InventoryManagementGUI extends JFrame {
     }
 
     private void saveItem() {
-        // User_Input checker 
+        // User_Input checker
         String name = nameField.getText();
         String quantityText = quantityField.getText();
         String priceText = priceField.getText();
         String expiryDate = expiryDateField.getText();
-
-        if (name.isEmpty() || quantityText.isEmpty() || priceText.isEmpty() || expiryDate.isEmpty()) {
+        String category = (String) categoryComboBox.getSelectedItem();
+    
+        if (name.isEmpty() || quantityText.isEmpty() || priceText.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill in all fields.");
             return;
         }
-
+    
         try {
             int quantity = Integer.parseInt(quantityText);
             double price = Double.parseDouble(priceText);
-            LocalDate.parse(expiryDate, DATE_FORMATTER); // Validate the expiry date format
-
+    
+            // If the item is food, check for expiry date
+            if (category.equals("Food") && expiryDate.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please enter an expiry date for food items.");
+                return;
+            }
+    
+            // If the item is food, validate the expiry date format
+            if (category.equals("Food")) {
+                try {
+                    LocalDate parsedExpiryDate = LocalDate.parse(expiryDate, DATE_FORMATTER); // Validate the expiry date format
+    
+                    // Check if the expiry date is in the past
+                    if (parsedExpiryDate.isBefore(LocalDate.now())) {
+                        JOptionPane.showMessageDialog(this, "The expiry date cannot be in the past.");
+                        return;
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "Invalid date format. Please use yyyy-MM-dd.");
+                    return;
+                }
+            }
+    
+            // Load existing items to check for duplicates
+            boolean itemExists = false;
+            try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] data = line.split(",");
+                    if (data[0].equalsIgnoreCase(name)) { // Check for case-insensitive match
+                        itemExists = true;
+                        break;
+                    }
+                }
+            }
+    
+            if (itemExists) {
+                JOptionPane.showMessageDialog(this, "The item '" + name + "' already exists in the inventory.");
+                return;
+            }
+    
             // Saving the data to the file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
-                writer.write(name + "," + quantity + "," + price + "," + expiryDate);
+                writer.write(name + "," + quantity + "," + price + "," + (category.equals("Food") ? expiryDate : "N/A"));
                 writer.newLine();
                 JOptionPane.showMessageDialog(this, "Item saved successfully!");
                 clearFields();
             }
-
-        } catch (NumberFormatException | IOException e) {
+    
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number for quantity and price.");
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error saving item: " + e.getMessage());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Invalid date format. Please use yyyy-MM-dd.");
         }
     }
-
+    
     // We need to empty the fields too
     private void clearFields() {
         nameField.setText("");
