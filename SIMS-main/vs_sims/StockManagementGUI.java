@@ -19,7 +19,7 @@ public class StockManagementGUI extends JFrame {
         ImageIcon icon = new ImageIcon("mainlogo.png");
         setIconImage(icon.getImage());
         setTitle("Stock Management");
-        setResizable(false);
+        setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);  // Make the frame full screen
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // Dispose on close instead of exit
         setLocationRelativeTo(null);  // Center the window

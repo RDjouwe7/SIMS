@@ -15,7 +15,7 @@ public class MainMenuGUI extends JFrame {
 
                   // Setting the Icon, Title and sizes
         ImageIcon icon = new ImageIcon("mainlogo.png"); // Logo icon
-        setResizable(false);
+        setResizable(true);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setIconImage(icon.getImage());
 
